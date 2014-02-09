@@ -4,7 +4,8 @@
 <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 <title>test </title>
 		<style>
-			body { padding:0; margin:0; background-image:url('static/images/field1.jpg'); background-size: contain; background-color: black;
+			html { height:100%;}
+			body { height:100%; padding:0; margin:0; background-image:url('static/images/field1.jpg'); background-size: contain;
 				background-repeat: no-repeat; background-position: center center; }
 			canvas { width: 100%; height: 100% }
 		</style>
@@ -70,16 +71,20 @@ function init()
 	
 	// set the view size in pixels (custom or according to window size)
 	// var SCREEN_WIDTH = 400, SCREEN_HEIGHT = 300;
-	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;	
+	var SCREEN_WIDTH = window.innerWidth, 
+		SCREEN_HEIGHT = window.innerHeight;	
 	// camera attributes
-	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	var VIEW_ANGLE = 45, 
+		ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, 
+		NEAR = 0.1, 
+		FAR = 20000;
 	// set up camera
 	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
 	// add the camera to the scene
 	scene.add(camera);
 	// the camera defaults to position (0,0,0)
 	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
-	camera.position.set(0,150,400);
+	camera.position.set(50,0,0);
 	camera.lookAt(scene.position);	
 	
 	//////////////
@@ -88,7 +93,7 @@ function init()
 	
 	// create and start the renderer; choose antialias setting.
 	if ( Detector.webgl )
-		renderer = new THREE.WebGLRenderer( {antialias:true} );
+		renderer = new THREE.WebGLRenderer( {antialias:true, alpha:true} );
 	else
 		renderer = new THREE.CanvasRenderer(); 
 	
@@ -112,14 +117,6 @@ function init()
 	// toggle full-screen on given key press
 	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
 	
-	//////////////
-	// CONTROLS //
-	//////////////
-
-	// move mouse and: left   click to rotate, 
-	//                 middle click to zoom, 
-	//                 right  click to pan
-	controls = new THREE.OrbitControls( camera, renderer.domElement );
 	
 	///////////
 	// LIGHT //
@@ -127,10 +124,10 @@ function init()
 	
 	// create a light
 	var light = new THREE.PointLight(0xffffff);
-	light.position.set(0,250,0);
+	light.position.set(100,250,0);
 	scene.add(light);
-	var ambientLight = new THREE.AmbientLight(0x111111);
-	// scene.add(ambientLight);
+	var ambientLight = new THREE.AmbientLight(0xffffff);
+	scene.add(ambientLight);
 	
 	
 	///////////
@@ -157,7 +154,7 @@ function init()
 	///////////
 	// FLOOR //
 	///////////
-	
+	/*
 	// note: 4x4 checkboard pattern scaled so that each square is 25 by 25 pixels.
 	var floorTexture = new THREE.ImageUtils.loadTexture( 'static/images/checkerboard.jpg' );
 	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
@@ -169,7 +166,8 @@ function init()
 	floor.position.y = -0.5;
 	floor.rotation.x = Math.PI / 2;
 	scene.add(floor);
-	
+	*/
+
 	/////////
 	// SKY //
 	/////////
@@ -189,15 +187,24 @@ function init()
 
 
 	// OBJECT
+	var maison;
 	var loader = new THREE.OBJMTLLoader();
 	loader.load( 'static/models/casa-simple/casa.obj', 'static/models/casa-simple/casa.mtl', function ( object ) {
-
-		object.position.y = - 80;
-		scene.add( object );
+		maison = object;
+		maison.position.y = 0;
+		scene.add( maison );
 
 	} );
 
+	//////////////
+	// CONTROLS //
+	//////////////
 
+	// move mouse and: left   click to rotate, 
+	//                 middle click to zoom, 
+	//                 right  click to pan
+	controls = new THREE.OrbitControls( camera, maison );
+	
 
 }
 
@@ -213,12 +220,6 @@ function update()
 	// delta = change in time since last call (in seconds)
 	var delta = clock.getDelta(); 
 
-	// functionality provided by THREEx.KeyboardState.js
-	if ( keyboard.pressed("1") )
-		document.getElementById('message').innerHTML = ' Have a nice day! - 1';	
-	if ( keyboard.pressed("2") )
-		document.getElementById('message').innerHTML = ' Have a nice day! - 2 ';	
-		
 	controls.update();
 }
 
