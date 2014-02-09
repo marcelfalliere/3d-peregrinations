@@ -13,77 +13,221 @@
 
 <body>
 
+<div id="ThreeJS" style="z-index: 1; position: absolute; left:0px; top:0px"></div>
 
-		<script src="static/js/vendor/threejs/build/three.js"></script>
+<script src="static/js/vendor/threejs/build/three.js"></script>
 
-		<script src="static/js/vendor/threex/THREEx.KeyboardState.js"></script>
+<script src="static/js/vendor/threejs/examples/js/Detector.js"></script>
+<script src="static/js/vendor/threejs/examples/js/controls/OrbitControls.js"></script>
+<script src="static/js/vendor/threejs/examples/js/loaders/MTLLoader.js"></script>
+<script src="static/js/vendor/threejs/examples/js/loaders/OBJMTLLoader.js"></script>
 
-		<script>
+<script src="static/js/vendor/threex/THREEx.KeyboardState.js"></script>
+<script src="static/js/vendor/threex/THREEx.FullScreen.js"></script>
+<script src="static/js/vendor/threex/THREEx.WindowResize.js"></script>
 
-			var scene = new THREE.Scene();
-			var camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+<script>
 
-			var keyboard = new THREEx.KeyboardState();
+/*
+	Three.js "tutorials by example"
+	Author: Lee Stemkoski
+	Date: July 2013 (three.js v59dev)
+ */
 
-			var geometry = new THREE.CubeGeometry(1,1,1);
-			var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-			var cube = new THREE.Mesh( geometry, material );
-			scene.add( cube );
+	
+//////////	
+// MAIN //
+//////////
 
-			camera.position.z = 5;
+// standard global variables
+var container, scene, camera, renderer, controls;
+var keyboard = new THREEx.KeyboardState();
+var clock = new THREE.Clock();
 
-			function render() {
-				requestAnimationFrame(render);
-				renderer.render(scene, camera);
+// custom global variables
+var cube;
 
-				if (keyboard.pressed('u')) {
-					cube.rotation.x+=0.01;
-				}
-				if (keyboard.pressed('i')) {
-					cube.rotation.x-=0.01;
-				}
-				if (keyboard.pressed('j')) {
-					cube.rotation.y+=0.01;
-				}
-				if (keyboard.pressed('k')) {
-					cube.rotation.y-=0.01;
-				}
-				if (keyboard.pressed(',')) {
-					cube.rotation.z+=0.01;
-				}
-				if (keyboard.pressed(';')) {
-					cube.rotation.z-=0.01;
-				}
+// initialization
+init();
 
-				if (keyboard.pressed('e')) {
-					camera.position.x+=0.01;
-				}
-				if (keyboard.pressed('r')) {
-					camera.position.x-=0.01;
-				}
-				if (keyboard.pressed('d')) {
-					camera.position.y+=0.01;
-				}
-				if (keyboard.pressed('f')) {
-					camera.position.y-=0.01;
-				}
-				if (keyboard.pressed('c')) {
-					camera.position.z+=0.01;
-				}
-				if (keyboard.pressed('v')) {
-					camera.position.z-=0.01;
-				}
-			}
+// animation loop / game loop
+animate();
 
-			console.log(camera);
-
-			var renderer = new THREE.WebGLRenderer( { alpha: true } );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			document.body.appendChild( renderer.domElement );
+///////////////
+// FUNCTIONS //
+///////////////
 			
-			render();
+function init() 
+{
+	///////////
+	// SCENE //
+	///////////
+	scene = new THREE.Scene();
 
-		</script>
+	////////////
+	// CAMERA //
+	////////////
+	
+	// set the view size in pixels (custom or according to window size)
+	// var SCREEN_WIDTH = 400, SCREEN_HEIGHT = 300;
+	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;	
+	// camera attributes
+	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
+	// set up camera
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	// add the camera to the scene
+	scene.add(camera);
+	// the camera defaults to position (0,0,0)
+	// 	so pull it back (z = 400) and up (y = 100) and set the angle towards the scene origin
+	camera.position.set(0,150,400);
+	camera.lookAt(scene.position);	
+	
+	//////////////
+	// RENDERER //
+	//////////////
+	
+	// create and start the renderer; choose antialias setting.
+	if ( Detector.webgl )
+		renderer = new THREE.WebGLRenderer( {antialias:true} );
+	else
+		renderer = new THREE.CanvasRenderer(); 
+	
+	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+	
+	// attach div element to variable to contain the renderer
+	container = document.getElementById( 'ThreeJS' );
+	// alternatively: to create the div at runtime, use:
+	//   container = document.createElement( 'div' );
+	//    document.body.appendChild( container );
+	
+	// attach renderer to the container div
+	container.appendChild( renderer.domElement );
+	
+	////////////
+	// EVENTS //
+	////////////
+
+	// automatically resize renderer
+	THREEx.WindowResize(renderer, camera);
+	// toggle full-screen on given key press
+	THREEx.FullScreen.bindKey({ charCode : 'm'.charCodeAt(0) });
+	
+	//////////////
+	// CONTROLS //
+	//////////////
+
+	// move mouse and: left   click to rotate, 
+	//                 middle click to zoom, 
+	//                 right  click to pan
+	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	
+	///////////
+	// LIGHT //
+	///////////
+	
+	// create a light
+	var light = new THREE.PointLight(0xffffff);
+	light.position.set(0,250,0);
+	scene.add(light);
+	var ambientLight = new THREE.AmbientLight(0x111111);
+	// scene.add(ambientLight);
+	
+	
+	///////////
+	// GRID //
+	///////////
+
+	var gridXZ = new THREE.GridHelper(100, 10);
+	gridXZ.setColors( new THREE.Color(0x006600), new THREE.Color(0x006600) );
+	gridXZ.position.set( 100,0,100 );
+	scene.add(gridXZ);
+	
+	var gridXY = new THREE.GridHelper(100, 10);
+	gridXY.position.set( 100,100,0 );
+	gridXY.rotation.x = Math.PI/2;
+	gridXY.setColors( new THREE.Color(0x000066), new THREE.Color(0x000066) );
+	scene.add(gridXY);
+
+	var gridYZ = new THREE.GridHelper(100, 10);
+	gridYZ.position.set( 0,100,100 );
+	gridYZ.rotation.z = Math.PI/2;
+	gridYZ.setColors( new THREE.Color(0x660000), new THREE.Color(0x660000) );
+	scene.add(gridYZ);
+
+	///////////
+	// FLOOR //
+	///////////
+	
+	// note: 4x4 checkboard pattern scaled so that each square is 25 by 25 pixels.
+	var floorTexture = new THREE.ImageUtils.loadTexture( 'static/images/checkerboard.jpg' );
+	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
+	floorTexture.repeat.set( 10, 10 );
+	// DoubleSide: render texture on both sides of mesh
+	var floorMaterial = new THREE.MeshBasicMaterial( { map: floorTexture, side: THREE.DoubleSide } );
+	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 1, 1);
+	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
+	floor.position.y = -0.5;
+	floor.rotation.x = Math.PI / 2;
+	scene.add(floor);
+	
+	/////////
+	// SKY //
+	/////////
+	
+	// recommend either a skybox or fog effect (can't use both at the same time) 
+	// without one of these, the scene's background color is determined by webpage background
+
+	// make sure the camera's "far" value is large enough so that it will render the skyBox!
+	var skyBoxGeometry = new THREE.CubeGeometry( 10000, 10000, 10000 );
+	// BackSide: render faces from inside of the cube, instead of from outside (default).
+	var skyBoxMaterial = new THREE.MeshBasicMaterial( { color: 0x9999ff, side: THREE.BackSide } );
+	var skyBox = new THREE.Mesh( skyBoxGeometry, skyBoxMaterial );
+	// scene.add(skyBox);
+	
+	// fog must be added to scene before first render
+	scene.fog = new THREE.FogExp2( 0x9999ff, 0.00025 );
+
+
+	// OBJECT
+	var loader = new THREE.OBJMTLLoader();
+	loader.load( 'static/models/casa-simple/casa.obj', 'static/models/casa-simple/casa.mtl', function ( object ) {
+
+		object.position.y = - 80;
+		scene.add( object );
+
+	} );
+
+
+
+}
+
+function animate() 
+{
+    requestAnimationFrame( animate );
+	render();		
+	update();
+}
+
+function update()
+{
+	// delta = change in time since last call (in seconds)
+	var delta = clock.getDelta(); 
+
+	// functionality provided by THREEx.KeyboardState.js
+	if ( keyboard.pressed("1") )
+		document.getElementById('message').innerHTML = ' Have a nice day! - 1';	
+	if ( keyboard.pressed("2") )
+		document.getElementById('message').innerHTML = ' Have a nice day! - 2 ';	
+		
+	controls.update();
+}
+
+function render() 
+{	
+	renderer.render( scene, camera );
+}
+
+</script>
 
 
 </body>
