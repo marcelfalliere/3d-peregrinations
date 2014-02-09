@@ -2,7 +2,10 @@
 <head>
 <meta charset="UTF-8">
 <title>Three.js JSON Loader Demo</title>
+
+<link rel="stylesheet" type="text/css" href="app.css">
 <script type="text/javascript" src="three.js"></script>
+<script type="text/javascript" src="../static/js/vendor/threejs/examples/js/renderers/CSS3DRenderer.js"></script>
 <script type="text/javascript">
 
 /* Uses JSONLoader to load objects that have been saved
@@ -155,6 +158,8 @@ function doKey(evt) {
 function init() {
     try {
         var theCanvas = document.getElementById("cnvs");
+        theCanvas.width = window.innerWidth;
+        theCanvas.height = window.innerHeight;
         if (!theCanvas || !theCanvas.getContext) {
             document.getElementById("message").innerHTML = 
                              "Sorry, your browser doesn't support canvas graphics.";
@@ -164,7 +169,8 @@ function init() {
             if (window.WebGLRenderingContext) {
                 renderer = new THREE.WebGLRenderer( { 
                    canvas: theCanvas, 
-                   antialias: true
+                   antialias: true,
+                   alpha : true
                 } );
             } 
         }
@@ -173,57 +179,38 @@ function init() {
         if (!renderer) { // If the WebGLRenderer couldn't be created, try a CanvasRenderer.
             renderer = new THREE.CanvasRenderer( { canvas: theCanvas } );
             renderer.setSize(theCanvas.width,theCanvas.height);
-            document.getElementById("message").innerHTML =
-                          "WebGL not available; falling back to CanvasRenderer.";
+            console.log("WebGL not available; falling back to CanvasRenderer.");
         }
+        
+        if (!renderer) { // If the WebGLRenderer couldn't be created, try a CanvasRenderer.
+            renderer = new THREE.CSS3DRenderer( { canvas: theCanvas } );
+            renderer.setSize(theCanvas.width,theCanvas.height);
+            console.log("WebGL not available; falling back to CanvasRenderer.");
+        }
+
+        renderer.setClearColor( 0x000000, 0 );
+
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(50, theCanvas.width/theCanvas.height, 0.1, 100);
         camera.position.z = 30;
         createWorld();
-        installModel("house.js");
+        installModel("mamaison.js");
         render();
         document.addEventListener("keydown", doKey, false);
-        document.getElementById("r1").checked = true;
      }
      catch (e) {
-        document.getElementById("message").innerHTML = "Sorry, an error occurred: " + e;
+        console.error(e);
      }
 }
 
 </script>
 </head>
-<body onload="init()" bgcolor="#CCC">
-
-<h2>Three.js JSON Loader Demo</h2>
-
-<noscript>
-<p style="color: #A00; font-weight: bold">Sorry, but this page requires JavaScript!</p>
-</noscript>
-
-<p style="color:#A00; font-weight: bold" id="message"></p>
-
-<p><b>Arrow keys rotate the model about its x- and y-axes.<br>
-Return key or HOME key sets both rotations to zero.</b></p>
+<body onload="init()">
 
 <div style="float:left">
-   <canvas width=600 height=600 id="cnvs" style="background-color:black"></canvas>
-   <p>Except for the first two, the models are from the three.js download.</p> 
+   <canvas id="cnvs"></canvas>
 </div>
 
-<div style="float:left; margin-left:2cm">
-
-<p style="text-indent: -1cm"><b>JSON models:</b><br>
-<input type="radio" name="model" id="r1" onchange="installModel('house.js',0)"> <label for="r1">house.js</label><br>
-<input type="radio" name="model" id="r7" onchange="installModel('multi-material.js',0xccccff)"> <label for="r7">multi-material.js</label><br>
-<input type="radio" name="model" id="r2" onchange="installModel('tree.js',0)"> <label for="r2">tree.js</label><br>
-<input type="radio" name="model" id="r3" onchange="installModel('terrain.js',0)"> <label for="r3">terrain.js</label><br>
-<input type="radio" name="model" id="r4" onchange="installModel('horse.js',0)"> <label for="r4">horse.js</label><br>
-<input type="radio" name="model" id="r5" onchange="installModel('stork.js',0)"> <label for="r5">stork.js</label><br>
-<input type="radio" name="model" id="r6" onchange="installModel('monster.js',0xddffdd)"> <label for="r6">monster.js</label><br>
-(use arrow keys to<br>
-see monster texture)<br>
-</p>
-</div>
 
 </body>
 </html>
