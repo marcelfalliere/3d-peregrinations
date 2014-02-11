@@ -110,7 +110,7 @@ function installModel(file, bgColor) {
     if (model) {
         scene.remove(model);
     }
-    renderer.setClearColor(bgColor);
+    //renderer.setClearColor(bgColor);
     render();
     var loader = new THREE.JSONLoader();
     loader.load("models-json/" + file, modelLoadedCallback);
@@ -156,19 +156,16 @@ function doKey(evt) {
  *  initial view of the scene.  If an error occurs, it is reported.
  */
 function init() {
-    try {
+    
         var theCanvas = document.getElementById("cnvs");
         theCanvas.width = window.innerWidth;
         theCanvas.height = window.innerHeight;
-        if (!theCanvas || !theCanvas.getContext) {
-            document.getElementById("message").innerHTML = 
-                             "Sorry, your browser doesn't support canvas graphics.";
-            return;
-        }
+
+    
+        
         try {  // try to create a WebGLRenderer
             if (window.WebGLRenderingContext) {
                 renderer = new THREE.WebGLRenderer( { 
-                   canvas: theCanvas, 
                    antialias: true,
                    alpha : true
                 } );
@@ -177,18 +174,20 @@ function init() {
         catch (e) {
         }
         if (!renderer) { // If the WebGLRenderer couldn't be created, try a CanvasRenderer.
-            renderer = new THREE.CanvasRenderer( { canvas: theCanvas } );
+            renderer = new THREE.CanvasRenderer( );
             renderer.setSize(theCanvas.width,theCanvas.height);
             console.log("WebGL not available; falling back to CanvasRenderer.");
         }
         
         if (!renderer) { // If the WebGLRenderer couldn't be created, try a CanvasRenderer.
-            renderer = new THREE.CSS3DRenderer( { canvas: theCanvas } );
+            renderer = new THREE.CSS3DRenderer(  );
             renderer.setSize(theCanvas.width,theCanvas.height);
             console.log("WebGL not available; falling back to CanvasRenderer.");
         }
 
-        renderer.setClearColor( 0x000000, 0 );
+        theCanvas.appendChild( renderer.domElement );
+
+        
 
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(50, theCanvas.width/theCanvas.height, 0.1, 100);
@@ -197,10 +196,7 @@ function init() {
         installModel("mamaison.js");
         render();
         document.addEventListener("keydown", doKey, false);
-     }
-     catch (e) {
-        console.error(e);
-     }
+     
 }
 
 </script>
@@ -208,7 +204,7 @@ function init() {
 <body onload="init()">
 
 <div style="float:left">
-   <canvas id="cnvs"></canvas>
+   <div id="cnvs"></div>
 </div>
 
 
