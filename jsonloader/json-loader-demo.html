@@ -21,7 +21,7 @@ var model; // The three.js object that represents the model.
 
 var rotateX = 0;   // rotation of model about the x-axis
 var rotateY = 0;  // rotation of model about the y-axis
-
+var rotateZ = 0;  // rotation of model about the z-axis
 
 /*  This function is called by the init() method.  It simply adds
  *  a light to the scene.  Objects are added later by the loader callback.
@@ -132,18 +132,28 @@ function render() {
  *  An event listener for the keydown event.  It is installed by the init() function.
  */
 function doKey(evt) { 
+    console.log(evt.keyCode);
     var rotationChanged = true;
 	switch (evt.keyCode) {
-	    case 37: rotateY -= 0.05; break;        // left arrow
-	    case 39: rotateY +=  0.05; break;       // right arrow
-	    case 38: rotateX -= 0.05; break;        // up arrow
-	    case 40: rotateX += 0.05; break;        // down arrow
-	    case 13: rotateX = rotateY = 0; break;  // return
-	    case 36: rotateX = rotateY = 0; break;  // home
+	    case 81: rotateY -= 0.05; break;        // left arrow
+	    case 68: rotateY +=  0.05; break;       // right arrow
+	    case 90: rotateX -= 0.05; break;        // up arrow
+	    case 83: rotateX += 0.05; break;        // down arrow
+        case 65: rotateZ -= 0.05; break;        // up arrow
+        case 69: rotateZ += 0.05; break;        // down arrow
+	    case 32: rotateX = rotateY = 0; break;  // return
+
+        var step = 0.2;
+        case 37: (model.position.setX(model.position.x - 0.2)); break;        // left arrow
+        case 39: (model.position.setX(model.position.x + 0.2)); break;       // right arrow
+        case 38: (model.position.setY(model.position.y + 0.2)); break;        // up arrow
+        case 40: (model.position.setY(model.position.y - 0.2)); break;        // down arrow
+        case 77: (model.position.setZ(model.position.z + 0.2)); break;        // P
+        case 80: (model.position.setZ(model.position.z - 0.2)); break;        // M
 	    default: rotationChanged = false;
 	}
 	if (model && rotationChanged) {
-       model.rotation.set(rotateX,rotateY,0);	
+       model.rotation.set(rotateX,rotateY,rotateZ);	
        render();
 	   evt.preventDefault();
 	}
@@ -170,9 +180,11 @@ function init() {
                    alpha : true
                 } );
             } 
+            document.body.appendChild(renderer.domElement);
         }
         catch (e) {
         }
+
         if (!renderer) { // If the WebGLRenderer couldn't be created, try a CanvasRenderer.
             renderer = new THREE.CanvasRenderer( );
             renderer.setSize(theCanvas.width,theCanvas.height);
@@ -187,13 +199,11 @@ function init() {
 
         theCanvas.appendChild( renderer.domElement );
 
-        
-
         scene = new THREE.Scene();
         camera = new THREE.PerspectiveCamera(50, theCanvas.width/theCanvas.height, 0.1, 100);
         camera.position.z = 30;
         createWorld();
-        installModel("mamaison.js");
+        installModel("house.js");
         render();
         document.addEventListener("keydown", doKey, false);
      

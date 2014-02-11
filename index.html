@@ -126,7 +126,9 @@ function init()
 	
 	// create a light
 	var light = new THREE.PointLight(0xffffff);
+
 	light.position.set(100,250,0);
+
 	scene.add(light);
 	var ambientLight = new THREE.AmbientLight(0xffffff);
 	scene.add(ambientLight);
@@ -192,6 +194,7 @@ function init()
 	var maison;
 	var loader = new THREE.OBJMTLLoader();
 	loader.load( 'static/models/casa-simple/casa.obj', 'static/models/casa-simple/casa.mtl', function ( object ) {
+
 		maison = object;
 		maison.position.y = 0;
 		scene.add( maison );
